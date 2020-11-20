@@ -45,6 +45,11 @@ async function loadMainPrompts() {
           name: "Add Department",
           value: "ADD_DEPARTMENT"
         },
+        {
+          name: "Add Role",
+          value: "ADD_ROLE"
+        },
+
         //You will need to complete the rest of the switch statement
         {
           name: "Quit",
@@ -68,6 +73,8 @@ async function loadMainPrompts() {
       return removeEmployee();
     case "ADD_DEPARTMENT":
       return addDepartment();
+    case "ADD_ROLE":
+      return addRole();
     //You will need to complete the rest of the cases 
     default:
       return quit();
@@ -207,6 +214,34 @@ async function addDepartment() {
   ]);
   await db.createDepartment(department);
   console.log("added department to the database");
+  loadMainPrompts();
+}
+async function addRole() {
+  const departments = await db.findAllDepartments();
+
+  const departmentChoices = departments.map(({ id, name }) => ({
+    name: name,
+    value: id
+  }));
+  const role = await prompt([
+    {
+      name: "title",
+      message: "What is the title of the role?"
+    },
+    {
+      type: "number",
+      name: "salary",
+      message: "What is the salary for this role?"
+    },
+    {
+      type: "list",
+      name: "department_id",
+      message: "What department would you like to add this role to?",
+      choices: departmentChoices
+    }
+  ]);
+  await db.createRole(role);
+  console.log("added this role to the database");
   loadMainPrompts();
 }
 
