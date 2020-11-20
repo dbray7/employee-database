@@ -49,6 +49,18 @@ async function loadMainPrompts() {
           name: "Add Role",
           value: "ADD_ROLE"
         },
+        {
+          name: "View Roles",
+          value: "VIEW_ROLES"
+        },
+        {
+          name: "View Departments",
+          value: "VIEW_DEPARTMENTS"
+        },
+        {
+          name: "Update Employee Role",
+          value: "UPDATE_EMPLOYEE_ROLE"
+        },
 
         //You will need to complete the rest of the switch statement
         {
@@ -75,10 +87,35 @@ async function loadMainPrompts() {
       return addDepartment();
     case "ADD_ROLE":
       return addRole();
+    case "VIEW_ROLES":
+      return viewRoles();
+    case "VIEW_DEPARTMENTS":
+      return viewDeparments();
+    case "UPDATE_EMPLOYEE_ROLE":
+      return updateEmployeeRole();
+
     //You will need to complete the rest of the cases 
     default:
       return quit();
   }
+}
+
+async function viewDeparments() {
+  const departments = await db.findAllDepartments();
+
+  console.log("\n");
+  console.table(departments);
+
+  loadMainPrompts();
+}
+
+async function viewRoles() {
+  const roles = await db.findAllRoles();
+
+  console.log("\n");
+  console.table(roles);
+
+  loadMainPrompts();
 }
 
 async function viewEmployees() {
@@ -240,11 +277,41 @@ async function addRole() {
       choices: departmentChoices
     }
   ]);
+
   await db.createRole(role);
   console.log("added this role to the database");
   loadMainPrompts();
 }
+async function updateEmployeeRole() {
+  const roles = await db.findAllRoles();
+  const rolesChoices = roles.map(({ id, title }) => ({
+    name: title,
+    value: id
+  }));
+  const employees = await db.findAllEmployees();
 
+  const employeeChoices = employees.map(({ id, first_name, last_name }) => ({
+    name: `${first_name} ${last_name}`,
+    value: id
+  }));
+  const newRole = await prompt([
+    {
+      type: "list",
+      name: "employeeId",
+      message: "What employees role would you like to change?",
+      choices: employeeChoices
+    },
+    {
+      type: "list",
+      name: "roleId",
+      message: "What is the employees new role?",
+      choices: rolesChoices
+    }
+  ]);
+  await db.updateEmployeeRole(newRole.employeeId, newRole.roleId);
+  console.log("added employees new role to database");
+  loadMainPrompts();
+}
 
 function quit() {
   console.log("Goodbye!");
